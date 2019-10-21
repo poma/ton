@@ -29,7 +29,7 @@ This repository contains only the build scripts, the main source code is in the 
 
 The binaries are built on a public CI server. Both Travis and Docker hub provide verifiable builds with public logs, git commit hash, and build config snapshot, so unless Travis CI itself is malicious it's easy to verify that build was done using original source from `ton-blockchain/ton` repo without any modifications.
 
-You can access build logs at [Travis](https://travis-ci.org/poma/ton) [Docker hub](https://hub.docker.com/r/poma/ton/builds) webistes
+You can access build logs at [Travis](https://travis-ci.org/poma/ton) and [Docker hub](https://hub.docker.com/r/poma/ton/builds) webistes
 
 # More info
 

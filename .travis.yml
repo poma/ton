@@ -57,7 +57,8 @@ matrix:
     - os: windows
 
 allow_failures:
-  - dist: xenial
+  - os: linux
+    dist: xenial
   - os: windows
 
 install:

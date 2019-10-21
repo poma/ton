@@ -4,7 +4,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 RUN git clone --recursive https://github.com/ton-blockchain/ton
 WORKDIR /ton/build
-RUN git rev-parse HEAD > commit
+RUN git rev-parse HEAD > commit && echo "Git commit: $(cat commit)"
 RUN cmake -G "Ninja" ..
 RUN ninja
 RUN wget https://test.ton.org/ton-lite-client-test1.config.json

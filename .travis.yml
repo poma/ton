@@ -1,0 +1,155 @@
+if: tag IS blank
+language: cpp
+compiler: clang
+
+matrix:
+  include:
+    - os: linux
+      dist: bionic
+      addons:
+        apt:
+          packages:
+            - ninja-build
+            - pkg-config
+            - libssl-dev
+            - zlib1g-dev
+            - libreadline-dev
+            - libmicrohttpd-dev
+            - gperf
+    - os: linux
+      dist: xenial
+      compiler: gcc
+      addons:
+        apt:
+          packages:
+            - ninja-build
+            - pkg-config
+            - libssl-dev
+            - zlib1g-dev
+            - libreadline-dev
+            - libmicrohttpd-dev
+            - gperf
+    - os: osx
+      osx_image: xcode11.2
+      addons:
+        homebrew:
+          packages:
+            - ninja
+            - cmake
+            - openssl
+    - os: osx
+      osx_image: xcode10.2
+      addons:
+        homebrew:
+          packages:
+            - ninja
+            - cmake
+            - openssl
+    - os: osx
+      osx_image: xcode9.4
+      addons:
+        homebrew:
+          packages:
+            - ninja
+            - cmake
+            - openssl
+
+    - os: windows
+
+allow_failures:
+  - dist: xenial
+  - os: windows
+
+install:
+  - env
+  - ${CC} --version
+  - ${CC} -v
+  - ${CXX} --version
+  - ${CXX} -v
+  - git clone --recursive https://github.com/ton-blockchain/ton
+  - cd ton
+  - export COMMIT=`git rev-parse HEAD`
+  - export COMMIT_SHORT=`git rev-parse --short HEAD`
+  - export COMMIT_MESSAGE=`git log -1 --pretty=%B`
+  - echo "Using git commit $COMMIT"
+  - | 
+    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+      export RELEASE_FILE=ton_linux_${TRAVIS_DIST}_${TRAVIS_ARCH}_${TRAVIS_COMPILER}_${COMMIT_SHORT}.tar.gz
+      wget https://test.ton.org/ton-lite-client-test1.config.json
+      wget https://test.ton.org/ton-global.config.json
+    elif [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+      export RELEASE_FILE=ton_osx_$(sw_vers -productVersion)_${TRAVIS_OSX_IMAGE}_${TRAVIS_ARCH}_${TRAVIS_COMPILER}_${COMMIT_SHORT}.tar.gz
+      export PKG_CONFIG_PATH="/usr/local/opt/openssl/lib/pkgconfig"
+      wget https://test.ton.org/ton-lite-client-test1.config.json
+      wget https://test.ton.org/ton-global.config.json
+    elif [[ "${TRAVIS_OS_NAME}" == "windows" ]]; then
+      export RELEASE_FILE=ton_windows_${TRAVIS_ARCH}_${TRAVIS_COMPILER}_${COMMIT_SHORT}.tar.gz
+    fi
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "windows" ]]; then
+      choco install ninja gperf openssl getopt # zlib libmicrohttpd
+      # git clone https://github.com/Microsoft/vcpkg.git
+      # cd vcpkg
+      # export VCPKG_DEFAULT_TRIPLET=x86-windows
+      # ./bootstrap-vcpkg.bat
+      # ./vcpkg integrate install
+      # ./vcpkg install zlib # libmicrohttpd
+      # cd ..
+    fi
+
+script:
+  - mkdir build
+  - cd build
+  - cmake -G "Ninja" ..
+  - ninja
+# Also compatible with regular CMake build (slower)
+#  - cmake -DCMAKE_TOOLCHAIN_FILE="../vcpkg/scripts/buildsystems/vcpkg.cmake" ..
+#  - cmake .. 
+#  - cmake --build .
+#  - test?
+  - mkdir -p release/lib
+# todo: exe file names
+  - |
+    mv lite-client/lite-client \
+       crypto/fift \
+       crypto/tlbc \
+       crypto/create-state \
+       crypto/dump-block \
+       crypto/func \
+       validator-engine/validator-engine \
+       validator-engine-console/validator-engine-console \
+       tonlib/tonlib-cli \
+       utils/generate-random-id \
+       adnl/adnl-proxy \
+       adnl/adnl-pong \
+       tdnet/tcp_ping_pong \
+       tdnet/udp_ping_pong \
+       dht-server/dht-server \
+       ../ton-lite-client-test1.config.json \
+       ../ton-global.config.json \
+       release/
+  - |
+    mv ../crypto/fift/lib/* \
+       ../crypto/smartcont/stdlib.fc \
+       release/lib/
+  - tar -czvf $RELEASE_FILE release
+# Skipped files:
+# ./tl/generate/generate_common
+# ./tl/generate/tonlib_generate_java_api
+# ../tl/generate/scheme
+# ./utils/json2tlo
+
+before_deploy:
+  - git config --local user.name "poma"
+  - git config --local user.email "semenov.roman@mail.ru"
+  - export TRAVIS_TAG=${TRAVIS_TAG:-build-$TRAVIS_BUILD_NUMBER}
+  - git tag $TRAVIS_TAG
+
+deploy:
+  provider: releases
+  name: TON binaries for commit $COMMIT_SHORT
+  body: "Last commit: $COMMIT_MESSAGE"
+  api_key:
+    secure: "M6VV7yeF3nokzWtg6Wv8ukGyusA8Fvd3ne1HKm2HzS99JbDd3URqICQ28SSxAyn5kc1oYuZUUdBdKUK6yMzYkO6ISFpITMxuu4F87nSDdIz7F7UzjZWxBUa3xY4MRVVK+hH5zD6h8AKctuC6h6MsMj0sQdl463ZO1mJ4OYDc45qo/ssdLI7LENBLihW0V5pdwm9bYwfRYXziHcGjro+QOZEYAYmUOx74HpJ6MHc0ChzJT18IL31trIEEKXRagJymYZfapkQgXf7yQUT0lO8clmimjBC59Xd7OFM4iUtbGWXmjB0UfMMqy16HS2q0eGtjeWPOvOwGO3iNcOqpMhUXsQQkn1UJNAm8A428vGADisFrclBd/W3QdLrgtJYVpbLwgI9kbhwxD7KBGHSZohRLlb8TKA6n2HRgcC1/JgppeCy+qpyDFIq3cFqwN5mmVTEhxqQ/Oy2Q73i23I8tDpMbqlhEBxiTT9mPlID6ITLiIknmwi2aiyzm3AspksPcL2SgrdG9m5nOUOI9gi/au1JqxMzFcwIr41zFELPf0R837qirKPgeQzqfl3N0pfsb91jnF7g6FvBMXsluQc2DDM0nFJlevXraWrgdZ6e2ai2b7nvWN4d+ugXLS++vC3PRGklodG5cinBRuM6jFbtXlx3TO7e4ZUsNBrOR0lvtjrH2lBU="
+  file: $RELEASE_FILE
+  skip_cleanup: true

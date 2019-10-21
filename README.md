@@ -8,7 +8,7 @@ This repository contains pre-built binaries for TON from the official source cod
 - fift and func compilers and libraries
 - adnl, dht, and other utilities
 
-Binaries are built for Windows, Linux, OS X, and Docker.
+Binaries are built for  OS X, Linux, Windows (WIP), and Docker.
 
 Download from the [releass page](https://github.com/poma/ton/releases)
 

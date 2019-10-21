@@ -143,12 +143,12 @@ before_deploy:
   - git config --local user.name "poma"
   - git config --local user.email "semenov.roman@mail.ru"
   - export TRAVIS_TAG=${TRAVIS_TAG:-build-$TRAVIS_BUILD_NUMBER}
-  - git tag $TRAVIS_TAG
+  - git tag -f $TRAVIS_TAG
 
 deploy:
   provider: releases
   name: TON binaries for commit $COMMIT_SHORT
-  body: "Last commit: $COMMIT_MESSAGE"
+#  body: "Last commit: $COMMIT_MESSAGE" # causes error in travis
   api_key:
     secure: "M6VV7yeF3nokzWtg6Wv8ukGyusA8Fvd3ne1HKm2HzS99JbDd3URqICQ28SSxAyn5kc1oYuZUUdBdKUK6yMzYkO6ISFpITMxuu4F87nSDdIz7F7UzjZWxBUa3xY4MRVVK+hH5zD6h8AKctuC6h6MsMj0sQdl463ZO1mJ4OYDc45qo/ssdLI7LENBLihW0V5pdwm9bYwfRYXziHcGjro+QOZEYAYmUOx74HpJ6MHc0ChzJT18IL31trIEEKXRagJymYZfapkQgXf7yQUT0lO8clmimjBC59Xd7OFM4iUtbGWXmjB0UfMMqy16HS2q0eGtjeWPOvOwGO3iNcOqpMhUXsQQkn1UJNAm8A428vGADisFrclBd/W3QdLrgtJYVpbLwgI9kbhwxD7KBGHSZohRLlb8TKA6n2HRgcC1/JgppeCy+qpyDFIq3cFqwN5mmVTEhxqQ/Oy2Q73i23I8tDpMbqlhEBxiTT9mPlID6ITLiIknmwi2aiyzm3AspksPcL2SgrdG9m5nOUOI9gi/au1JqxMzFcwIr41zFELPf0R837qirKPgeQzqfl3N0pfsb91jnF7g6FvBMXsluQc2DDM0nFJlevXraWrgdZ6e2ai2b7nvWN4d+ugXLS++vC3PRGklodG5cinBRuM6jFbtXlx3TO7e4ZUsNBrOR0lvtjrH2lBU="
   file: $RELEASE_FILE

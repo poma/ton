@@ -10,7 +10,7 @@ This repository contains pre-built binaries for TON from the official source cod
 
 Binaries are built for  OS X, Linux, Windows (WIP), and Docker.
 
-Download from the [releass page](https://github.com/poma/ton/releases)
+Download from the [releases page](https://github.com/poma/ton/releases)
 
 Docker image is [poma/ton](https://hub.docker.com/r/poma/ton) on docker hub
 
